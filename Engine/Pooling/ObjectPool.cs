@@ -4,6 +4,7 @@ using SE.Utility;
 
 namespace SE.Pooling
 {
+    // TODO: Make thread safe.
     public class ObjectPool<T> where T : new()
     {
         public PoolBehavior Behaviour = PoolBehavior.Grow;
