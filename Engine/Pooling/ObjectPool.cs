@@ -4,8 +4,7 @@ using SE.Utility;
 
 namespace SE.Pooling
 {
-    // TODO: Make thread safe.
-    public class ObjectPool<T> where T : new()
+    public abstract class ObjectPoolBase<T>
     {
         public PoolBehavior Behaviour = PoolBehavior.Grow;
 
@@ -16,16 +15,20 @@ namespace SE.Pooling
         protected QuickList<T> Pool;
         protected HashSet<T> Active;
 
-        private Func<T> instantiateFunc;
+        protected ObjectPoolBase(int startingCapacity = 128)
+        {
+            Pool = new QuickList<T>(startingCapacity);
+            Active = new HashSet<T>();
+        }
 
-        public virtual T Take()
+        public T Take()
         {
             T obj;
             IPoolable pooled = null;
             if (Pool.Count < 1) {
                 switch (Behaviour) {
                     case PoolBehavior.Grow:
-                        obj = instantiateFunc != null ? instantiateFunc.Invoke() : new T();
+                        obj = CreateNewInstance();
                         pooled = obj as IPoolable;
                         pooled?.PoolInitialize();
                         break;
@@ -43,7 +46,7 @@ namespace SE.Pooling
             return obj;
         }
 
-        public virtual void Return(T obj)
+        public void Return(T obj)
         {
             if (obj == null || !Active.Contains(obj))
                 return;
@@ -55,10 +58,13 @@ namespace SE.Pooling
             }
         }
 
-        public ObjectPool(int startingCapacity = 128)
+        protected abstract T CreateNewInstance();
+    }
+
+    public class ObjectPool<T> : ObjectPoolBase<T> where T : new()
+    {
+        public ObjectPool(int startingCapacity = 128) : base(startingCapacity)
         {
-            Pool = new QuickList<T>(startingCapacity);
-            Active = new HashSet<T>();
             for (int i = 0; i < startingCapacity; i++) {
                 T obj = new T();
                 if (obj is IPoolable pooled) {
@@ -68,11 +74,19 @@ namespace SE.Pooling
             }
         }
 
-        public ObjectPool(Func<T> instantiateFunc, int startingCapacity = 128)
+        protected override T CreateNewInstance()
+        {
+            return new T();
+        }
+    }
+
+    public class FuncObjectPool<T> : ObjectPoolBase<T>
+    {
+        private Func<T> instantiateFunc;
+
+        public FuncObjectPool(Func<T> instantiateFunc, int startingCapacity = 128) : base(startingCapacity)
         {
             this.instantiateFunc = instantiateFunc;
-            Pool = new QuickList<T>(startingCapacity);
-            Active = new HashSet<T>();
             for (int i = 0; i < startingCapacity; i++) {
                 T obj = instantiateFunc.Invoke();
                 if (obj is IPoolable pooled) {
@@ -80,6 +94,11 @@ namespace SE.Pooling
                 }
                 Pool.Add(obj);
             }
+        }
+
+        protected override T CreateNewInstance()
+        {
+            return instantiateFunc.Invoke();
         }
     }
 }
