@@ -8,7 +8,8 @@ namespace SE.Utility
 {
     public static class QuickParallel
     {
-        private static ObjectPool<PooledCountdownEvent> countdownPool = new ObjectPool<PooledCountdownEvent>();
+        private static ThreadLocal<CountdownEvent> countdownLocal
+            = new ThreadLocal<CountdownEvent>(() => new CountdownEvent(1));
 
         // TODO: Still not as fast as Parallel :(
         public static void ForEach<T>(QuickList<T> source, Action<T> action)
@@ -17,17 +18,16 @@ namespace SE.Utility
             int amount = (int) Math.Floor((double) source.Count / threads);
             int curOffset = 0;
 
-            PooledCountdownEvent countdown = countdownPool.Take();
-            countdown.Event.Reset(threads);
+            CountdownEvent countdown = countdownLocal.Value;
+            countdown.Reset(threads);
             for (int i = 0; i < threads; i++) {
                 if (threads == 1 || i == threads - 1) {
                     amount = source.Count - curOffset;
                 }
-                QueueThread(source.Array, curOffset, amount, countdown.Event, action);
+                QueueThread(source.Array, curOffset, amount, countdown, action);
                 curOffset += amount;
             }
-            countdown.Event.Wait();
-            countdownPool.Return(countdown);
+            countdown.Wait();
         }
 
         public static void ForEach<T>(QuickList<T> source, Action<T[], int> action)
@@ -36,17 +36,16 @@ namespace SE.Utility
             int amount = (int) Math.Floor((double) source.Count / threads);
             int curOffset = 0;
 
-            PooledCountdownEvent countdown = countdownPool.Take();
-            countdown.Event.Reset(threads);
+            CountdownEvent countdown = countdownLocal.Value;
+            countdown.Reset(threads);
             for (int i = 0; i < threads; i++) {
                 if (threads == 1 || i == threads - 1) {
                     amount = source.Count - curOffset;
                 }
-                QueueThread(source.Array, curOffset, amount, countdown.Event, action);
+                QueueThread(source.Array, curOffset, amount, countdown, action);
                 curOffset += amount;
             }
-            countdown.Event.Wait();
-            countdownPool.Return(countdown);
+            countdown.Wait();
         }
 
         public static void For(int fromInclusive, int toInclusive, Action<int> body)
@@ -56,8 +55,8 @@ namespace SE.Utility
             int amount = (int) Math.Floor((double) count / threads);
             int curOffset = fromInclusive;
 
-            PooledCountdownEvent countdown = countdownPool.Take();
-            countdown.Event.Reset(threads);
+            CountdownEvent countdown = countdownLocal.Value;
+            countdown.Reset(threads);
             for (int i = 0; i < threads; i++) {
                 if (threads == 1 || i == threads - 1) {
                     amount = count - curOffset;
@@ -70,12 +69,11 @@ namespace SE.Utility
                         body.Invoke(ii);
                     }
                     ((CountdownEvent) state).Signal();
-                }, countdown.Event);
+                }, countdown);
 
                 curOffset += amount;
             }
-            countdown.Event.Wait();
-            countdownPool.Return(countdown);
+            countdown.Wait();
         }
 
         private static void QueueThread<T>(T[] source, int from, int count, CountdownEvent countdown, Action<T> action)
