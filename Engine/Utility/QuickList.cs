@@ -54,6 +54,13 @@ namespace SE.Utility
             Count = 0;
         }
 
+        public QuickList<T> Copy()
+        {
+            QuickList<T> copy = new QuickList<T>(Count);
+            copy.AddRange(this);
+            return copy;
+        }
+
         /// <summary>
         /// Adds an item.
         /// </summary>
