@@ -14,7 +14,7 @@ namespace SE.Utility
     /// Contains a collection of <see cref="CurveKey"/> points in 2D space and provides methods for evaluating features of the curve they define.
     /// </summary>
     [DataContract]
-    public class Curve
+    public unsafe class Curve
     {
         #region Private Fields
 
@@ -94,82 +94,83 @@ namespace SE.Utility
         public float Evaluate(float position)
         {
             int keysCount = keys.Count;
-            CurveKey[] array = keys.Keys.Array;
+            
+            fixed (CurveKey* arrPtr = keys.Keys.Array) {
+                CurveKey* first = &arrPtr[0];
+                CurveKey* last = &arrPtr[keysCount - 1];
+                
+                if (position < first->Position) {
+                    switch (PreLoop) {
+                        case CurveLoopType.Constant:
+                            //constant
+                            return first->Value;
 
-            CurveKey first = array[0];
-            CurveKey last = array[keysCount - 1];
+                        case CurveLoopType.Linear:
+                            // linear y = a*x +b with a tangeant of last point
+                            return first->Value - first->TangentIn * (first->Position - position);
 
-            if (position < first.Position) {
-                switch (PreLoop) {
-                    case CurveLoopType.Constant:
-                        //constant
-                        return first.Value;
+                        case CurveLoopType.Cycle:
+                            //start -> end / start -> end
+                            int cycle = GetNumberOfCycle(position);
+                            float virtualPos = position - (cycle * (last->Position - first->Position));
+                            return GetCurvePosition(virtualPos);
 
-                    case CurveLoopType.Linear:
-                        // linear y = a*x +b with a tangeant of last point
-                        return first.Value - first.TangentIn * (first.Position - position);
+                        case CurveLoopType.CycleOffset:
+                            //make the curve continue (with no step) so must up the curve each cycle of delta(value)
+                            cycle = GetNumberOfCycle(position);
+                            virtualPos = position - (cycle * (last->Position - first->Position));
+                            return (GetCurvePosition(virtualPos) + cycle * (last->Value - first->Value));
 
-                    case CurveLoopType.Cycle:
-                        //start -> end / start -> end
-                        int cycle = GetNumberOfCycle(position);
-                        float virtualPos = position - (cycle * (last.Position - first.Position));
-                        return GetCurvePosition(virtualPos);
-
-                    case CurveLoopType.CycleOffset:
-                        //make the curve continue (with no step) so must up the curve each cycle of delta(value)
-                        cycle = GetNumberOfCycle(position);
-                        virtualPos = position - (cycle * (last.Position - first.Position));
-                        return (GetCurvePosition(virtualPos) + cycle * (last.Value - first.Value));
-
-                    case CurveLoopType.Oscillate:
-                        //go back on curve from end and target start 
-                        // start-> end / end -> start
-                        cycle = GetNumberOfCycle(position);
-                        if (0 == cycle % 2f)//if pair
-                            virtualPos = position - (cycle * (last.Position - first.Position));
-                        else
-                            virtualPos = last.Position - position + first.Position + (cycle * (last.Position - first.Position));
-                        return GetCurvePosition(virtualPos);
+                        case CurveLoopType.Oscillate:
+                            //go back on curve from end and target start 
+                            // start-> end / end -> start
+                            cycle = GetNumberOfCycle(position);
+                            if (0 == cycle % 2f)//if pair
+                                virtualPos = position - (cycle * (last->Position - first->Position));
+                            else
+                                virtualPos = last->Position - position + first->Position + (cycle * (last->Position - first->Position));
+                            return GetCurvePosition(virtualPos);
+                    }
                 }
-            }
-            else if (position > last.Position) {
-                int cycle;
-                switch (PostLoop) {
-                    case CurveLoopType.Constant:
-                        //constant
-                        return last.Value;
+                else if (position > last->Position) {
+                    int cycle;
+                    switch (PostLoop) {
+                        case CurveLoopType.Constant:
+                            //constant
+                            return last->Value;
 
-                    case CurveLoopType.Linear:
-                        // linear y = a*x +b with a tangeant of last point
-                        return last.Value + first.TangentOut * (position - last.Position);
+                        case CurveLoopType.Linear:
+                            // linear y = a*x +b with a tangent of last point
+                            return last->Value + first->TangentOut * (position - last->Position);
 
-                    case CurveLoopType.Cycle:
-                        //start -> end / start -> end
-                        cycle = GetNumberOfCycle(position);
-                        float virtualPos = position - (cycle * (last.Position - first.Position));
-                        return GetCurvePosition(virtualPos);
+                        case CurveLoopType.Cycle:
+                            //start -> end / start -> end
+                            cycle = GetNumberOfCycle(position);
+                            float virtualPos = position - (cycle * (last->Position - first->Position));
+                            return GetCurvePosition(virtualPos);
 
-                    case CurveLoopType.CycleOffset:
-                        //make the curve continue (with no step) so must up the curve each cycle of delta(value)
-                        cycle = GetNumberOfCycle(position);
-                        virtualPos = position - (cycle * (last.Position - first.Position));
-                        return (GetCurvePosition(virtualPos) + cycle * (last.Value - first.Value));
+                        case CurveLoopType.CycleOffset:
+                            //make the curve continue (with no step) so must up the curve each cycle of delta(value)
+                            cycle = GetNumberOfCycle(position);
+                            virtualPos = position - (cycle * (last->Position - first->Position));
+                            return (GetCurvePosition(virtualPos) + cycle * (last->Value - first->Value));
 
-                    case CurveLoopType.Oscillate:
-                        //go back on curve from end and target start 
-                        // start-> end / end -> start
-                        cycle = GetNumberOfCycle(position);
-                        virtualPos = position - (cycle * (last.Position - first.Position));
-                        if (0 == cycle % 2f)//if pair
-                            virtualPos = position - (cycle * (last.Position - first.Position));
-                        else
-                            virtualPos = last.Position - position + first.Position + (cycle * (last.Position - first.Position));
-                        return GetCurvePosition(virtualPos);
+                        case CurveLoopType.Oscillate:
+                            //go back on curve from end and target start 
+                            // start-> end / end -> start
+                            cycle = GetNumberOfCycle(position);
+                            virtualPos = position - (cycle * (last->Position - first->Position));
+                            if (0 == cycle % 2f)//if pair
+                                virtualPos = position - (cycle * (last->Position - first->Position));
+                            else
+                                virtualPos = last->Position - position + first->Position + (cycle * (last->Position - first->Position));
+                            return GetCurvePosition(virtualPos);
+                    }
                 }
-            }
 
-            //in curve
-            return GetCurvePosition(position);
+                //in curve
+                return GetCurvePosition(position);
+            }
         }
 
         /// <summary>
@@ -215,64 +216,66 @@ namespace SE.Utility
             int keysCount = keys.Count;
             // See http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.curvetangent.aspx
 
-            CurveKey[] array = keys.Keys.Array;
+            fixed(CurveKey* arrPtr = keys.Keys.Array) {
+                CurveKey* key = &arrPtr[keyIndex];
 
-            var key = array[keyIndex];
+                float p0, p, p1;
+                p0 = p = p1 = key->Position;
 
-            float p0, p, p1;
-            p0 = p = p1 = key.Position;
+                float v0, v, v1;
+                v0 = v = v1 = key->Value;
 
-            float v0, v, v1;
-            v0 = v = v1 = key.Value;
+                if (keyIndex > 0) {
+                    CurveKey* prev = &arrPtr[keyIndex - 1];
+                    p0 = prev->Position;
+                    v0 = prev->Value;
+                }
 
-            if (keyIndex > 0) {
-                p0 = array[keyIndex - 1].Position;
-                v0 = array[keyIndex - 1].Value;
-            }
+                if (keyIndex < keysCount - 1) {
+                    CurveKey* next = &arrPtr[keyIndex + 1];
+                    p1 = next->Position;
+                    v1 = next->Value;
+                }
 
-            if (keyIndex < keysCount - 1) {
-                p1 = array[keyIndex + 1].Position;
-                v1 = array[keyIndex + 1].Value;
-            }
-
-            switch (tangentInType) {
-                case CurveTangent.Flat:
-                    key.TangentIn = 0;
-                    break;
-                case CurveTangent.Linear:
-                    key.TangentIn = v - v0;
-                    break;
-                case CurveTangent.Smooth:
-                    var pn = p1 - p0;
+                switch (tangentInType) {
+                    case CurveTangent.Flat:
+                        key->TangentIn = 0;
+                        break;
+                    case CurveTangent.Linear:
+                        key->TangentIn = v - v0;
+                        break;
+                    case CurveTangent.Smooth:
+                        var pn = p1 - p0;
 #if NETSTANDARD2_1
-                    if (MathF.Abs(pn) < float.Epsilon)
+                        if (MathF.Abs(pn) < float.Epsilon)
 #else
-                    if (Math.Abs(pn) < float.Epsilon)
+                        if (Math.Abs(pn) < float.Epsilon)
 #endif
-                        key.TangentIn = 0;
-                    else
-                        key.TangentIn = (v1 - v0) * ((p - p0) / pn);
-                    break;
-            }
+                            key->TangentIn = 0;
+                        else
+                            key->TangentIn = (v1 - v0) * ((p - p0) / pn);
+                        break;
+                }
 
-            switch (tangentOutType) {
-                case CurveTangent.Flat:
-                    key.TangentOut = 0;
-                    break;
-                case CurveTangent.Linear:
-                    key.TangentOut = v1 - v;
-                    break;
-                case CurveTangent.Smooth:
-                    var pn = p1 - p0;
+                switch (tangentOutType) {
+                    case CurveTangent.Flat:
+                        key->TangentOut = 0;
+                        break;
+                    case CurveTangent.Linear:
+                        key->TangentOut = v1 - v;
+                        break;
+                    case CurveTangent.Smooth:
+                        var pn = p1 - p0;
 #if NETSTANDARD2_1
-                    if (MathF.Abs(pn) < float.Epsilon)
+                        if (MathF.Abs(pn) < float.Epsilon)
 #else
-                    if (Math.Abs(pn) < float.Epsilon)
+                        if (Math.Abs(pn) < float.Epsilon)
 #endif
-                        key.TangentOut = 0;
-                    else
-                        key.TangentOut = (v1 - v0) * ((p1 - p) / pn);
-                    break;
+                            key->TangentOut = 0;
+                        else
+                            key->TangentOut = (v1 - v0) * ((p1 - p) / pn);
+                        break;
+                }
             }
         }
 
@@ -282,37 +285,43 @@ namespace SE.Utility
 
         private int GetNumberOfCycle(float position)
         {
-            float cycle = (position - keys[0].Position) / (keys[keys.Count - 1].Position - keys[0].Position);
-            if (cycle < 0f)
-                cycle--;
-            return (int)cycle;
+            fixed (CurveKey* arrPtr = keys.Keys.Array) {
+                float cycle = (position - (&arrPtr[0])->Position) / ((&arrPtr[keys.Count - 1])->Position - (&arrPtr[0])->Position);
+                if (cycle < 0f)
+                    cycle--;
+                return (int) cycle;
+            }
         }
 
         private float GetCurvePosition(float position)
         {
             //only for position in curve
             int keysCount = keys.Count;
-            CurveKey[] array = keys.Keys.Array;
-            CurveKey prev = array[0];
-            for (int i = 1; i < keysCount; ++i) {
-                CurveKey next = array[i];
-                if (next.Position >= position) {
-                    if (prev.Continuity == CurveContinuity.Step) {
-                        return position >= 1f ? next.Value : prev.Value;
+
+            fixed (CurveKey* arrPtr = keys.Keys.Array) {
+                CurveKey* prev = &arrPtr[0];
+                for (int i = 1; i < keysCount; ++i) {
+                    CurveKey* next = &arrPtr[i];
+                    if (next->Position >= position) {
+                        if (prev->Continuity == CurveContinuity.Step) {
+                            return position >= 1f ? next->Value : prev->Value;
+                        }
+                        
+                        float t = (position - prev->Position) / (next->Position - prev->Position);//to have t in [0,1]
+                        float ts = t * t;
+                        float tss = ts * t;
+                        
+                        //After a lot of search on internet I have found all about spline function
+                        // and bezier (phi'sss ancien) but finaly use hermite curve 
+                        //http://en.wikipedia.org/wiki/Cubic_Hermite_spline
+                        //P(t) = (2*t^3 - 3t^2 + 1)*P0 + (t^3 - 2t^2 + t)m0 + (-2t^3 + 3t^2)P1 + (t^3-t^2)m1
+                        //with P0.value = prev.value , m0 = prev.tangentOut, P1= next.value, m1 = next.TangentIn
+                        return (2 * tss - 3 * ts + 1f) * prev->Value + (tss - 2 * ts + t) * prev->TangentOut + (3 * ts - 2 * tss) * next->Value + (tss - ts) * next->TangentIn;
                     }
-                    float t = (position - prev.Position) / (next.Position - prev.Position);//to have t in [0,1]
-                    float ts = t * t;
-                    float tss = ts * t;
-                    //After a lot of search on internet I have found all about spline function
-                    // and bezier (phi'sss ancien) but finaly use hermite curve 
-                    //http://en.wikipedia.org/wiki/Cubic_Hermite_spline
-                    //P(t) = (2*t^3 - 3t^2 + 1)*P0 + (t^3 - 2t^2 + t)m0 + (-2t^3 + 3t^2)P1 + (t^3-t^2)m1
-                    //with P0.value = prev.value , m0 = prev.tangentOut, P1= next.value, m1 = next.TangentIn
-                    return (2 * tss - 3 * ts + 1f) * prev.Value + (tss - 2 * ts + t) * prev.TangentOut + (3 * ts - 2 * tss) * next.Value + (tss - ts) * next.TangentIn;
+                    prev = next;
                 }
-                prev = next;
+                return 0f;
             }
-            return 0f;
         }
 
         #endregion
@@ -345,7 +354,7 @@ namespace SE.Utility
     /// </summary>
     // TODO : [TypeConverter(typeof(ExpandableObjectConverter))]
     [DataContract]
-    public class CurveKey : IEquatable<CurveKey>, IComparable<CurveKey>
+    public struct CurveKey : IEquatable<CurveKey>, IComparable<CurveKey>
     {
         #region Properties
 
@@ -377,11 +386,6 @@ namespace SE.Utility
         #endregion
 
         #region Constructors
-
-        /// <summary>
-        /// Creates a new instance of <see cref="CurveKey"/> class with position: 0 and value: 0.
-        /// </summary>
-        public CurveKey() : this(0, 0) { }
 
         /// <summary>
         /// Creates a new instance of <see cref="CurveKey"/> class.
@@ -437,17 +441,11 @@ namespace SE.Utility
         /// <returns><c>true</c> if the instances are equal; <c>false</c> otherwise.</returns>
         public static bool operator ==(CurveKey value1, CurveKey value2)
         {
-            if (Equals(value1, null))
-                return Equals(value2, null);
-
-            if (Equals(value2, null))
-                return Equals(value1, null);
-
             return (value1.Position == value2.Position)
-                && (value1.Value == value2.Value)
-                && (value1.TangentIn == value2.TangentIn)
-                && (value1.TangentOut == value2.TangentOut)
-                && (value1.Continuity == value2.Continuity);
+                   && (value1.Value == value2.Value)
+                   && (value1.TangentIn == value2.TangentIn)
+                   && (value1.TangentOut == value2.TangentOut)
+                   && (value1.Continuity == value2.Continuity);
         }
 
         /// <summary>
@@ -462,7 +460,7 @@ namespace SE.Utility
 
         public bool Equals(CurveKey other) => (this == other);
 
-        public override bool Equals(object obj) => (obj as CurveKey) != null && Equals((CurveKey)obj);
+        public override bool Equals(object obj) => (obj is CurveKey key) && Equals(key);
 
         public override int GetHashCode() =>
             Position.GetHashCode() ^ Value.GetHashCode() ^ TangentIn.GetHashCode() ^
@@ -476,7 +474,7 @@ namespace SE.Utility
     /// </summary>
     // TODO : [TypeConverter(typeof(ExpandableObjectConverter))]
     [DataContract]
-    public class CurveKeyCollection : IEnumerable<CurveKey>
+    public class CurveKeyCollection
     {
         #region Private Fields
 
@@ -538,11 +536,6 @@ namespace SE.Utility
         }
 
         #endregion
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return Keys.GetEnumerator();
-        }
 
         public void Add(float position, float value)
         {
