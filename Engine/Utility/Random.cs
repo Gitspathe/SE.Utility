@@ -25,7 +25,7 @@ namespace SE.Utility
 
         public static float NextAngle()
         {
-#if NETSTANDARD2_1
+#if MODERN_DOTNET
             return Next(-MathF.PI, MathF.PI);
 #else
             return Next((float)-Math.PI, (float)Math.PI);
@@ -34,7 +34,7 @@ namespace SE.Utility
 
         public static float NextAngle(float max)
         {
-#if NETSTANDARD2_1
+#if MODERN_DOTNET
             return Next(-MathF.PI, -MathF.PI + (MathF.PI * 2.0f * max));
 #else
             return Next((float)-Math.PI, (float)(-Math.PI + (Math.PI * 2.0f * max)));
@@ -44,7 +44,7 @@ namespace SE.Utility
         public static void NextUnitVector(out Vector2 vector)
         {
             float angle = NextAngle();
-#if NETSTANDARD2_1
+#if MODERN_DOTNET
             vector = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
 #else
             vector = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
@@ -54,11 +54,11 @@ namespace SE.Utility
         public static Vector2 NextUnitVector()
         {
             float angle = NextAngle();
-        #if NETSTANDARD2_1
+#if MODERN_DOTNET
             return new Vector2(MathF.Cos(angle), MathF.Sin(angle));
-        #else
+#else
             return new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-        #endif
+#endif
         }
     }
 }
