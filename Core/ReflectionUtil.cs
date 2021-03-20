@@ -9,15 +9,19 @@ namespace SE.Core
     public static class ReflectionUtil
     {
         private static bool isDirty = true;
+        private static bool initialized;
         private static HashSet<Type> allTypes = new HashSet<Type>();
 
-        static ReflectionUtil()
+        public static void Initialize()
         {
+            if(initialized)
+                return;
+
             // Each time a new assembly is loaded into the domain, set the dirty flag to true.
-            AppDomain.CurrentDomain.AssemblyResolve += (o, args) => {
+            AppDomain.CurrentDomain.AssemblyLoad += (o, args) => {
                 isDirty = true;
-                return null;
             };
+            initialized = true;
         }
 
         public static IEnumerable<Type> GetTypes(Func<Type, bool> predicate)
