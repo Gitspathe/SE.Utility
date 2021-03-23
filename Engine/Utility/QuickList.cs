@@ -23,7 +23,12 @@ namespace SE.Utility
         public T[] Array;
 
         /// <summary>Elements length. DO NOT MODIFY!</summary>
-        public int Count;
+        public int Count {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] 
+            get; 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] 
+            private set;
+        }
 
         private int bufferLength; // Faster to cache the array length.
 
