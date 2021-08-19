@@ -111,15 +111,21 @@ namespace SE.Utility
             Count += items.Length;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)] // Cold path.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // Hot path.
         public void EnsureCapacity(int additionalItems = 1)
         {
             if (Count + additionalItems >= bufferLength) {
-                T[] newItems = new T[bufferLength + 1 + additionalItems];
-                System.Array.Copy(Array, 0, newItems, 0, bufferLength);
-                Array = newItems;
-                bufferLength = Array.Length-1;
+                Grow(additionalItems);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)] // Cold path.
+        private void Grow(int additionalItems)
+        {
+            T[] newItems = new T[bufferLength + 1 + additionalItems];
+            System.Array.Copy(Array, 0, newItems, 0, bufferLength);
+            Array = newItems;
+            bufferLength = Array.Length - 1;
         }
 
         /// <summary>
