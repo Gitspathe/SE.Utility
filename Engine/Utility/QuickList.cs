@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Newtonsoft.Json;
 
 // ReSharper disable InconsistentNaming
 
@@ -15,11 +14,9 @@ namespace SE.Utility
     /// QuickList is not thread-safe. Remember to wrap it in locks when writing multi-threaded code.
     /// </summary>
     /// <typeparam name="T">Type of the inner array.</typeparam>
-    [JsonObject]
     public sealed class QuickList<T> : IEnumerable<T>
     {
         /// <summary>Inner array/buffer.</summary>
-        [JsonProperty]
         public T[] Array;
 
         /// <summary>Elements length. DO NOT MODIFY!</summary>
@@ -255,7 +252,6 @@ namespace SE.Utility
 
         public QuickList() : this(8) { }
 
-        [JsonConstructor]
         public QuickList(T[] array) : this(8)
         {
             Array = array;
