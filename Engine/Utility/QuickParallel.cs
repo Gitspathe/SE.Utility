@@ -64,7 +64,7 @@ namespace SE.Utility
 
                 int offsetLocal = curOffset;
                 int amountLocal = amount;
-                ThreadPool.QueueUserWorkItem(state => {
+                ThreadPool.UnsafeQueueUserWorkItem(state => {
                     for (int ii = offsetLocal; ii < offsetLocal + amountLocal; ii++) {
                         body.Invoke(ii);
                     }
@@ -78,7 +78,7 @@ namespace SE.Utility
 
         private static void QueueThread<T>(T[] source, int from, int count, CountdownEvent countdown, Action<T> action)
         {
-            ThreadPool.QueueUserWorkItem(state => {
+            ThreadPool.UnsafeQueueUserWorkItem(state => {
                 T[] array = ArrayPool<T>.Shared.Rent(count);
                 Array.Copy(source, from, array, 0, count);
 
@@ -93,7 +93,7 @@ namespace SE.Utility
 
         private static void QueueThread<T>(T[] source, int from, int count, CountdownEvent countdown, Action<T[], int> action)
         {
-            ThreadPool.QueueUserWorkItem(state => {
+            ThreadPool.UnsafeQueueUserWorkItem(state => {
                 T[] array = ArrayPool<T>.Shared.Rent(count);
                 Array.Copy(source, from, array, 0, count);
 
