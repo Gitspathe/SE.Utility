@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SE.Utility;
+using System;
 using System.Collections.Generic;
-using SE.Utility;
 
 namespace SE.Pooling
 {

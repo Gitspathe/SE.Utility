@@ -1,7 +1,5 @@
-﻿using SE.Pooling;
-using System;
+﻿using System;
 using System.Buffers;
-using System.Collections;
 using System.Threading;
 
 namespace SE.Utility
@@ -15,7 +13,7 @@ namespace SE.Utility
         public static void ForEach<T>(QuickList<T> source, Action<T> action)
         {
             int threads = Math.Max(Environment.ProcessorCount - 1, 1);
-            int amount = (int) Math.Floor((double) source.Count / threads);
+            int amount = (int)Math.Floor((double)source.Count / threads);
             int curOffset = 0;
 
             CountdownEvent countdown = countdownLocal.Value;
@@ -33,7 +31,7 @@ namespace SE.Utility
         public static void ForEach<T>(QuickList<T> source, Action<T[], int> action)
         {
             int threads = Math.Max(Environment.ProcessorCount - 1, 1);
-            int amount = (int) Math.Floor((double) source.Count / threads);
+            int amount = (int)Math.Floor((double)source.Count / threads);
             int curOffset = 0;
 
             CountdownEvent countdown = countdownLocal.Value;
@@ -52,7 +50,7 @@ namespace SE.Utility
         {
             int count = toInclusive - fromInclusive;
             int threads = Math.Max(Environment.ProcessorCount - 1, 1);
-            int amount = (int) Math.Floor((double) count / threads);
+            int amount = (int)Math.Floor((double)count / threads);
             int curOffset = fromInclusive;
 
             CountdownEvent countdown = countdownLocal.Value;
@@ -68,7 +66,7 @@ namespace SE.Utility
                     for (int ii = offsetLocal; ii < offsetLocal + amountLocal; ii++) {
                         body.Invoke(ii);
                     }
-                    ((CountdownEvent) state).Signal();
+                    ((CountdownEvent)state).Signal();
                 }, countdown);
 
                 curOffset += amount;
@@ -87,7 +85,7 @@ namespace SE.Utility
                 }
 
                 ArrayPool<T>.Shared.Return(array);
-                ((CountdownEvent) state).Signal();
+                ((CountdownEvent)state).Signal();
             }, countdown);
         }
 
@@ -100,7 +98,7 @@ namespace SE.Utility
                 action.Invoke(array, count);
 
                 ArrayPool<T>.Shared.Return(array);
-                ((CountdownEvent) state).Signal();
+                ((CountdownEvent)state).Signal();
             }, countdown);
         }
 

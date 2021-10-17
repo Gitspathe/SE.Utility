@@ -11,16 +11,16 @@ namespace SE.Utility
         static readonly ThreadLocal<System.Random> random =
             new ThreadLocal<System.Random>(() => new System.Random(Interlocked.Increment(ref seed)));
 
-        public static float Next(float max = 1.0f) 
+        public static float Next(float max = 1.0f)
             => (float)(random.Value.NextDouble() * max);
 
-        public static int Next(int max) 
+        public static int Next(int max)
             => random.Value.Next(max);
 
-        public static float Next(float min, float max) 
+        public static float Next(float min, float max)
             => (float)random.Value.NextDouble() * (max - min) + min;
 
-        public static int Next(int min, int max) 
+        public static int Next(int min, int max)
             => random.Value.Next(min, max);
 
         public static float NextAngle()

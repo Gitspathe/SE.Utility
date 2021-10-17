@@ -14,7 +14,7 @@ namespace SE.Core
 
         public static void Initialize()
         {
-            if(initialized)
+            if (initialized)
                 return;
 
             // Each time a new assembly is loaded into the domain, set the dirty flag to true.

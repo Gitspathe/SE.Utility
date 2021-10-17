@@ -97,8 +97,8 @@ namespace SE.Utility
         [MethodImpl(MethodImplOptions.NoInlining)] // Cold path.
         private void AddWithResize(T item)
         {
-            T[] newItems = useArrayPool 
-                ? ArrayPool<T>.Shared.Rent(bufferLength * 2) 
+            T[] newItems = useArrayPool
+                ? ArrayPool<T>.Shared.Rent(bufferLength * 2)
                 : new T[bufferLength * 2];
 
             System.Array.Copy(Array, 0, newItems, 0, bufferLength);
@@ -136,8 +136,8 @@ namespace SE.Utility
         public void EnsureCapacity(int additionalItems = 1)
         {
             if (Count + additionalItems >= bufferLength) {
-                T[] newItems = useArrayPool 
-                    ? ArrayPool<T>.Shared.Rent(bufferLength + additionalItems) 
+                T[] newItems = useArrayPool
+                    ? ArrayPool<T>.Shared.Rent(bufferLength + additionalItems)
                     : new T[bufferLength + additionalItems];
 
                 System.Array.Copy(Array, 0, newItems, 0, bufferLength);
@@ -164,7 +164,7 @@ namespace SE.Utility
         /// Sorts the list with a given comparer.
         /// </summary>
         /// <param name="comparer">The comparer.</param>
-        public void Sort(IComparer comparer) 
+        public void Sort(IComparer comparer)
             => System.Array.Sort(Array, 0, Count, comparer);
 
         /// <summary>
@@ -209,7 +209,7 @@ namespace SE.Utility
         public void RemoveAt(int index)
         {
             Count--;
-            if(index < Count)
+            if (index < Count)
                 System.Array.Copy(Array, index + 1, Array, index, Count - index);
 
             Array[Count] = default;
@@ -257,7 +257,7 @@ namespace SE.Utility
 
         private void Dispose(bool disposing)
         {
-            if(isDisposed)
+            if (isDisposed)
                 return;
 
             if (disposeContents && typeof(IDisposable).IsAssignableFrom(typeof(T))) {

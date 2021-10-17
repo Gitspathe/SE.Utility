@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using SE.Utility;
 using System.Numerics;
-using System.Text;
-using SE.Utility;
 
 namespace SE.Engine.Utility
 {
@@ -15,9 +12,9 @@ namespace SE.Engine.Utility
 
         public Vector4 Evaluate(float position)
             => new Vector4(
-                X.Evaluate(position), 
-                Y.Evaluate(position), 
-                Z.Evaluate(position), 
+                X.Evaluate(position),
+                Y.Evaluate(position),
+                Z.Evaluate(position),
                 W.Evaluate(position));
 
         public void Add(float position, Vector4 value)

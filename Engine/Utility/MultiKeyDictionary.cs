@@ -8,13 +8,13 @@ namespace SE.Utility
         private Dictionary<TKey1, TValue> dictionary1 = new Dictionary<TKey1, TValue>();
         private Dictionary<TKey2, TValue> dictionary2 = new Dictionary<TKey2, TValue>();
 
-        public bool ContainsKey(TKey1 key1) 
+        public bool ContainsKey(TKey1 key1)
             => dictionary1.ContainsKey(key1);
 
-        public bool ContainsKey(TKey2 key2) 
+        public bool ContainsKey(TKey2 key2)
             => dictionary2.ContainsKey(key2);
 
-        public bool TryGetValue(TKey1 key1, out TValue value) 
+        public bool TryGetValue(TKey1 key1, out TValue value)
             => dictionary1.TryGetValue(key1, out value);
 
         public bool TryGetValue(TKey2 key2, out TValue value)
@@ -26,7 +26,7 @@ namespace SE.Utility
             dictionary2.Add(key2, value);
         }
 
-        public bool Remove(TKey1 key) 
+        public bool Remove(TKey1 key)
             => Remove(key, out _, out _);
 
         public bool Remove(TKey2 key)

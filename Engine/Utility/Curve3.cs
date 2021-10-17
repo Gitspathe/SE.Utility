@@ -24,8 +24,8 @@ namespace SE.Utility
 
         public Vector3 Evaluate(float position)
             => new Vector3(
-                X.Evaluate(position), 
-                Y.Evaluate(position), 
+                X.Evaluate(position),
+                Y.Evaluate(position),
                 Z.Evaluate(position));
 
         public void Add(float position, Vector3 value)

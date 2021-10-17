@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 // ReSharper disable InconsistentNaming
@@ -21,9 +20,9 @@ namespace SE.Utility
 
         /// <summary>Elements length. DO NOT MODIFY!</summary>
         public int Count {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] 
-            get; 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private set;
         }
 
@@ -83,7 +82,7 @@ namespace SE.Utility
             T[] newItems = new T[(bufferLength + 1) * 2];
             System.Array.Copy(Array, 0, newItems, 0, bufferLength);
             Array = newItems;
-            bufferLength = Array.Length-1;
+            bufferLength = Array.Length - 1;
             Array[Count++] = item;
         }
 
@@ -139,7 +138,7 @@ namespace SE.Utility
         /// Sorts the list with a given comparer.
         /// </summary>
         /// <param name="comparer">The comparer.</param>
-        public void Sort(IComparer comparer) 
+        public void Sort(IComparer comparer)
             => System.Array.Sort(Array, 0, Count, comparer);
 
         /// <summary>
@@ -184,7 +183,7 @@ namespace SE.Utility
         public void RemoveAt(int index)
         {
             Count--;
-            if(index < Count)
+            if (index < Count)
                 System.Array.Copy(Array, index + 1, Array, index, Count - index);
 
             Array[Count] = default;
@@ -198,7 +197,7 @@ namespace SE.Utility
         {
             T item = Array[index];
             Count--;
-            if(index < Count)
+            if (index < Count)
                 System.Array.Copy(Array, index + 1, Array, index, Count - index);
 
             Array[Count] = default;

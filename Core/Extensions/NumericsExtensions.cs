@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 
 namespace SE.Core.Extensions
 {
@@ -32,7 +31,7 @@ namespace SE.Core.Extensions
 #if NETSTANDARD2_1
             return MathF.Atan2(vector.X, -vector.Y);
 #else
-            return (float) Math.Atan2(vector.X, -vector.Y);
+            return (float)Math.Atan2(vector.X, -vector.Y);
 #endif
         }
 
@@ -55,13 +54,13 @@ namespace SE.Core.Extensions
 #endif
         }
 
-        public static bool Intersects(this Vector4 bounds, Vector2 point) 
-            => bounds.X <= point.X 
-               && point.X < bounds.X + bounds.Z 
-               && bounds.Y <= point.Y 
+        public static bool Intersects(this Vector4 bounds, Vector2 point)
+            => bounds.X <= point.X
+               && point.X < bounds.X + bounds.Z
+               && bounds.Y <= point.Y
                && point.Y < bounds.Y + bounds.W;
 
-        public static bool Intersects(this Vector4 bounds, Vector4 otherBounds) 
+        public static bool Intersects(this Vector4 bounds, Vector4 otherBounds)
             => otherBounds.X < bounds.X + bounds.Z &&
                bounds.X < otherBounds.X + otherBounds.Z &&
                otherBounds.Y < bounds.Y + bounds.W &&

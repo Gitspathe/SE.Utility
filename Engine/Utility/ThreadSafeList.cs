@@ -28,8 +28,7 @@ namespace SE.Utility
         /// <param name="index"></param>
         /// <returns></returns>
         [Obsolete("It's preferred to access the inner array directly via the " + nameof(Array) + " field.")]
-        public T this[int index]
-        {
+        public T this[int index] {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => Array[index];
         }

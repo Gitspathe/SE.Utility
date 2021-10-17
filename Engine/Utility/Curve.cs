@@ -3,7 +3,6 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -79,8 +78,8 @@ namespace SE.Utility
         public Curve Clone()
         {
             Curve curve = new Curve {
-                keys = keys.Clone(), 
-                preLoop = preLoop, 
+                keys = keys.Clone(),
+                preLoop = preLoop,
                 postLoop = postLoop
             };
             return curve;
@@ -94,11 +93,11 @@ namespace SE.Utility
         public float Evaluate(float position)
         {
             int keysCount = keys.Count;
-            
+
             fixed (CurveKey* arrPtr = keys.Keys.Array) {
                 CurveKey* first = &arrPtr[0];
                 CurveKey* last = &arrPtr[keysCount - 1];
-                
+
                 if (position < first->Position) {
                     switch (PreLoop) {
                         case CurveLoopType.Constant:
@@ -131,8 +130,7 @@ namespace SE.Utility
                                 virtualPos = last->Position - position + first->Position + (cycle * (last->Position - first->Position));
                             return GetCurvePosition(virtualPos);
                     }
-                }
-                else if (position > last->Position) {
+                } else if (position > last->Position) {
                     int cycle;
                     switch (PostLoop) {
                         case CurveLoopType.Constant:
@@ -216,7 +214,7 @@ namespace SE.Utility
             int keysCount = keys.Count;
             // See http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.curvetangent.aspx
 
-            fixed(CurveKey* arrPtr = keys.Keys.Array) {
+            fixed (CurveKey* arrPtr = keys.Keys.Array) {
                 CurveKey* key = &arrPtr[keyIndex];
 
                 float p0, p, p1;
@@ -289,7 +287,7 @@ namespace SE.Utility
                 float cycle = (position - (&arrPtr[0])->Position) / ((&arrPtr[keys.Count - 1])->Position - (&arrPtr[0])->Position);
                 if (cycle < 0f)
                     cycle--;
-                return (int) cycle;
+                return (int)cycle;
             }
         }
 
@@ -306,11 +304,11 @@ namespace SE.Utility
                         if (prev->Continuity == CurveContinuity.Step) {
                             return position >= 1f ? next->Value : prev->Value;
                         }
-                        
+
                         float t = (position - prev->Position) / (next->Position - prev->Position);//to have t in [0,1]
                         float ts = t * t;
                         float tss = ts * t;
-                        
+
                         //After a lot of search on internet I have found all about spline function
                         // and bezier (phi'sss ancien) but finaly use hermite curve 
                         //http://en.wikipedia.org/wiki/Cubic_Hermite_spline

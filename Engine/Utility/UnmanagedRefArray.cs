@@ -9,16 +9,16 @@ namespace SE.Utility
 
         public UnmanagedRefArray(int size)
         {
-            Data = (T*) Marshal.AllocHGlobal(Marshal.SizeOf(typeof(T)) * size);
+            Data = (T*)Marshal.AllocHGlobal(Marshal.SizeOf(typeof(T)) * size);
         }
 
-        public T* this[int i] 
+        public T* this[int i]
             => &Data[i];
 
         public void Dispose()
         {
             if (Data != null) {
-                Marshal.FreeHGlobal((IntPtr) Data);
+                Marshal.FreeHGlobal((IntPtr)Data);
                 Data = null;
             }
         }

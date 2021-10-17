@@ -43,36 +43,36 @@ namespace SE.Utility
             return NextSingle(-MathF.PI, MathF.PI);
 #else
             return NextSingle((float)-Math.PI, (float)Math.PI);
-        #endif
+#endif
         }
 
         public float NextAngle(float max)
         {
-        #if MODERN_DOTNET
+#if MODERN_DOTNET
             return NextSingle(-MathF.PI, -MathF.PI + (MathF.PI * 2.0f * max));
-        #else
+#else
             return NextSingle((float)-Math.PI, (float)(-Math.PI + (Math.PI * 2.0f * max)));
-        #endif
+#endif
         }
 
         public void NextUnitVector(out Vector2 vector)
         {
             float angle = NextAngle();
-        #if MODERN_DOTNET
+#if MODERN_DOTNET
             vector = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
-        #else
+#else
             vector = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-        #endif
+#endif
         }
 
         public Vector2 NextUnitVector()
         {
             float angle = NextAngle();
-        #if MODERN_DOTNET
+#if MODERN_DOTNET
             return new Vector2(MathF.Cos(angle), MathF.Sin(angle));
-        #else
+#else
             return new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-        #endif
+#endif
         }
     }
 }
