@@ -1,4 +1,4 @@
-﻿namespace SE.Core
+namespace SE.Core
 {
     public enum LogSource
     {

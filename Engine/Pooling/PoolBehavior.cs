@@ -1,4 +1,4 @@
-﻿namespace SE.Pooling
+namespace SE.Pooling
 {
     /// <summary>How the pool behaves when it's capacity is overflowed.</summary>
     public enum PoolBehavior
