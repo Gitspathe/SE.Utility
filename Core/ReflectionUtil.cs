@@ -32,7 +32,7 @@ namespace SE.Core
                 Setup();
 
             QuickList<Type> types = new QuickList<Type>();
-            foreach(Type type in allTypes) {
+            foreach (Type type in allTypes) {
                 if (predicate(type)) {
                     types.Add(type);
                 }
@@ -93,7 +93,7 @@ namespace SE.Core
 
                 foreach (Type type in assemblyTypes) {
                     object[] attributes = type.GetCustomAttributes(typeof(ReflectionCachedType), true);
-                    for(int i = 0; i < attributes.Length; i++) {
+                    for (int i = 0; i < attributes.Length; i++) {
                         ReflectionCachedType cacheInfo = (ReflectionCachedType)attributes[i];
                         Type baseType = cacheInfo.Type;
                         Type realType = type;
