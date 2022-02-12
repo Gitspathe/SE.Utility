@@ -266,6 +266,8 @@ namespace SE.Utility
                 }
             }
 
+            Clear();
+
             if (useArrayPool) {
                 ArrayPool<T>.Shared.Return(Array);
             }

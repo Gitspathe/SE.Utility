@@ -2,8 +2,11 @@ using SE.Core.Extensions;
 using SE.Utility;
 using SE.Attributes;
 using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace SE.Core
 {
@@ -12,6 +15,7 @@ namespace SE.Core
         private static bool isDirty = true;
         private static bool initialized;
         private static HashSet<Type> allTypes = new HashSet<Type>();
+        private static HashSet<Assembly> loadedAssemblies = new HashSet<Assembly>();
         private static Dictionary<Type, HashSet<Type>> cachedTypes = new Dictionary<Type, HashSet<Type>>();
 
         public static void Initialize()
@@ -83,25 +87,41 @@ namespace SE.Core
             return qList;
         }
 
-        private static void Setup()
+        /// <summary>
+        /// Clears and resets all reflection cache data.
+        /// </summary>
+        internal static void FullReset()
         {
+            // TODO: Call this when the editor reloads assemblies.
             cachedTypes.Clear();
             allTypes.Clear();
+            loadedAssemblies.Clear();
+            Setup();
+        }
+
+        private static void Setup()
+        {
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                Type[] assemblyTypes = assembly.GetTypes();
-                allTypes.AddRange(assemblyTypes);
+                if (loadedAssemblies.Contains(assembly)) {
+                    continue;
+                }
 
-                foreach (Type type in assemblyTypes) {
-                    object[] attributes = type.GetCustomAttributes(typeof(ReflectionCachedType), true);
-                    for (int i = 0; i < attributes.Length; i++) {
-                        ReflectionCachedType cacheInfo = (ReflectionCachedType)attributes[i];
-                        Type baseType = cacheInfo.Type;
-                        Type realType = type;
+                loadedAssemblies.Add(assembly);
+                allTypes.AddRange(assembly.GetTypes());
+            }
 
-                        if (!cacheInfo.IncludeBase && realType == baseType) {
-                            continue;
-                        }
+            Parallel.ForEach(allTypes, (type) => {
+                object[] attributes = type.GetCustomAttributes(typeof(ReflectionCachedType), true);
+                for (int i = 0; i < attributes.Length; i++) {
+                    ReflectionCachedType cacheInfo = (ReflectionCachedType)attributes[i];
+                    Type baseType = cacheInfo.Type;
+                    Type realType = type;
 
+                    if (!cacheInfo.IncludeBase && realType == baseType) {
+                        continue;
+                    }
+
+                    lock (cachedTypes) {
                         if (cachedTypes.TryGetValue(baseType, out HashSet<Type> typeList)) {
                             typeList.Add(realType);
                         } else {
@@ -111,8 +131,10 @@ namespace SE.Core
                     }
 
                 }
-            }
+            });
+
             isDirty = false;
         }
+
     }
 }
