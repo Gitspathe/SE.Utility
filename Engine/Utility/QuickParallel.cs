@@ -74,6 +74,32 @@ namespace SE.Utility
             countdown.Wait();
         }
 
+        public static void For(int fromInclusive, int toInclusive, Action<int, int> body)
+        {
+            int count = toInclusive - fromInclusive;
+            int threads = Math.Max(Environment.ProcessorCount - 1, 1);
+            int amount = (int)Math.Floor((double)count / threads);
+            int curOffset = fromInclusive;
+
+            CountdownEvent countdown = countdownLocal.Value;
+            countdown.Reset(threads);
+            for (int i = 0; i < threads; i++) {
+                if (threads == 1 || i == threads - 1) {
+                    amount = count - curOffset;
+                }
+
+                int offsetLocal = curOffset;
+                int amountLocal = amount;
+                ThreadPool.UnsafeQueueUserWorkItem(state => {
+                    body.Invoke(offsetLocal, offsetLocal + amountLocal);
+                    ((CountdownEvent)state).Signal();
+                }, countdown);
+
+                curOffset += amount;
+            }
+            countdown.Wait();
+        }
+
         private static void QueueThread<T>(T[] source, int from, int count, CountdownEvent countdown, Action<T> action)
         {
             ThreadPool.UnsafeQueueUserWorkItem(state => {
